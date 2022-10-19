@@ -8,7 +8,10 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
+import android.view.LayoutInflater
+import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
+import com.example.foregroundserviceexample.databinding.LayoutCustomNotificationBinding
 
 class MyService: Service() {
 
@@ -26,25 +29,28 @@ class MyService: Service() {
 
             Log.e("MyService", song.toString())
 
-            sendNotification(strDataIntent)
+            sendNotification(song)
         }
 
         return START_NOT_STICKY
     }
 
-    private fun sendNotification(data: String?) {
+    private fun sendNotification(song: Song?) {
 
         val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
         val pendingIntent = PendingIntent.getActivity(this, 0, intent, FLAG_IMMUTABLE)
 
+        val remoteView = RemoteViews(packageName, R.layout.layout_custom_notification)
+        remoteView.setTextViewText(R.id.tv_name, song?.name)
+        remoteView.setTextViewText(R.id.tv_artist, song?.artist)
+
         val notification = NotificationCompat.Builder(this, MyApplication.CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle("Foreground service example")
-            .setContentText(data)
             .setContentIntent(pendingIntent)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setCustomContentView(remoteView)
             .build()
 
         startForeground(1, notification)
